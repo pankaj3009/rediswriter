@@ -1,0 +1,9 @@
+redissubscribeip=127.0.0.1
+redissubscribeport=6379
+rediswriteip=127.0.0.1
+rediswriteport=6379
+rediswritedb=9
+equitymetric=india.nse.equity.s1.tick
+futuremetric=india.nse.future.s1.tick
+optionmetric=india.nse.option.s1.tick
+endtime=15:35:00
