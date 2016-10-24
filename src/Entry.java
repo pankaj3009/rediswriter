@@ -77,7 +77,7 @@ public class Entry {
             String endDateStr = currDateStr + " " + endTimeStr;
             java.util.Date endDate = parseDate("yyyyMMdd HH:mm:ss", endDateStr);
             Timer endProcessing = new Timer("Timer: " + " EndProcessing");
-            //endProcessing.schedule(end, endDate);
+            endProcessing.schedule(end, endDate);
             new RedisSubscribe(redisSubscribeIP, redisSubscribePort, 9, topic);
         } else {
             logger.log(Level.SEVERE, "Please specify an unambiguous parameter file");
