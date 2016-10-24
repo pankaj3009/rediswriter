@@ -1,13 +1,18 @@
 
 import java.io.PrintStream;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jquantlib.time.BusinessDayConvention;
+import org.jquantlib.time.DateParser;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ScanResult;
 
 /*
  * To change this template, choose Tools | Templates
@@ -31,9 +36,43 @@ public class RedisSubscribe extends JedisPubSub {
             Thread t = new Thread(new RedisSubscribeThread(this, topic));
             t.setName("Redis Market Data Subscriber");
             t.start();
+            
+            JedisPool deletepool = new JedisPool(new JedisPoolConfig(), Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
+            String purgeDate=getPriorBusinessDay(new SimpleDateFormat("yyyy-MM-dd").format(new Date()),"yyyy-MM-dd",Entry.purgeage);
+            long purgeThreshold=new SimpleDateFormat("yyyy-MM-dd").parse(purgeDate).getTime();
+            Jedis deleteJedis=deletepool.getResource();
+             String cursor = "";
+            while (!cursor.equals("0")) {
+                cursor = cursor.equals("") ? "0" : cursor;
+                   ScanResult s = deleteJedis.scan(cursor);
+                    cursor = s.getCursor();
+                    for (Object key : s.getResult()) {
+                        if (key.toString().contains(":")) {
+                               deleteJedis.zremrangeByScore(key.toString(), 0, purgeThreshold);
+                        }
+                    }
+                
+            }
+            if(deleteJedis!=null){
+                deleteJedis.close();
+            }
+            deletepool.destroy();
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
+    }
+    
+    public static String getPriorBusinessDay(String date, String outputFormat, int ref) {
+        String reference = date;
+        for (int i = 0; i < ref; i++) {
+            SimpleDateFormat sdfOutput = new SimpleDateFormat(outputFormat);
+            org.jquantlib.time.Date today = DateParser.parseISO(reference);
+            org.jquantlib.time.Date yesterday = today.sub(1);
+            yesterday = Entry.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+            String yesterdayString = (sdfOutput.format(yesterday.isoDate()));
+            reference = yesterdayString;
+        }
+        return reference;
     }
 
     @Override
