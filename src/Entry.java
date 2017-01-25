@@ -67,7 +67,7 @@ public class Entry {
                             ind.addHoliday(new org.jquantlib.time.Date(getFormattedDate(h, "yyyyMMdd", TimeZone.getDefault())));
                         }
                     } catch (Exception e) {
-                        logger.log(Level.SEVERE, null);
+                        logger.log(Level.SEVERE, null,e);
                     }
                 }
             }
