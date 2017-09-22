@@ -21,7 +21,9 @@ public class RedisSubscribeThread implements Runnable {
     RedisSubscribeThread(RedisSubscribe subscriber, String topic) {
         this.subscriber = subscriber;
         this.topic = topic;
-        marketdatapool = new JedisPool(new JedisPoolConfig(), "127.0.0.1", 6379, 2000, null, 9);
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxWaitMillis(60000);
+        marketdatapool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379, 2000, null, 9);
 
     }
 

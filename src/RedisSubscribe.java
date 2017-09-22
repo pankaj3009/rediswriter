@@ -30,14 +30,15 @@ public class RedisSubscribe extends JedisPubSub {
    public static Jedis jedis;
     public RedisSubscribe(String redisSubscribeIP, int redisSubscribePort,int db, String topic) {
         try {
-            subscribepool = new JedisPool(new JedisPoolConfig(), redisSubscribeIP,redisSubscribePort, 2000, null, db);
-            writepool = new JedisPool(new JedisPoolConfig(), Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
+            JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+            jedisPoolConfig.setMaxWaitMillis(60000);
+            subscribepool = new JedisPool(jedisPoolConfig, redisSubscribeIP,redisSubscribePort, 2000, null, db);
+            writepool = new JedisPool(jedisPoolConfig, Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
             jedis=writepool.getResource();
             Thread t = new Thread(new RedisSubscribeThread(this, topic));
             t.setName("Redis Market Data Subscriber");
             t.start();
-            
-            JedisPool deletepool = new JedisPool(new JedisPoolConfig(), Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
+            JedisPool deletepool = new JedisPool(jedisPoolConfig, Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
             String purgeDate=getPriorBusinessDay(new SimpleDateFormat("yyyy-MM-dd").format(new Date()),"yyyy-MM-dd",Entry.purgeage);
             long purgeThreshold=new SimpleDateFormat("yyyy-MM-dd").parse(purgeDate).getTime();
             Jedis deleteJedis=deletepool.getResource();
