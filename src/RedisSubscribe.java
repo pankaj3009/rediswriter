@@ -32,9 +32,9 @@ public class RedisSubscribe extends JedisPubSub {
         try {
             JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 //            jedisPoolConfig.setMaxWaitMillis(60000);
-            jedisPoolConfig.setMaxWaitMillis(2);
-            subscribepool = new JedisPool(jedisPoolConfig, redisSubscribeIP,redisSubscribePort, 2000, null, db);
-            writepool = new JedisPool(jedisPoolConfig, Entry.redisWriteIP,Entry.redisWritePort, 2000, null, Entry.redisWriteDB);
+            jedisPoolConfig.setMaxWaitMillis(1000);
+            subscribepool = new JedisPool(jedisPoolConfig, redisSubscribeIP,redisSubscribePort, 10000, null, db);
+            writepool = new JedisPool(jedisPoolConfig, Entry.redisWriteIP,Entry.redisWritePort, 10000, null, Entry.redisWriteDB);
             jedis=writepool.getResource();
             
             Thread t = new Thread(new RedisSubscribeThread(this, topic));
